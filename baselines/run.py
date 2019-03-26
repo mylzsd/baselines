@@ -56,22 +56,26 @@ def train(args, extra_args):
     total_timesteps = int(args.num_timesteps)
     seed = args.seed
 
-    learn = get_learn_function(args.alg)
+    learn = get_learn_function(args.alg)    # pass 'deepq' by default -> baseline.deepq.deepq.learn
     alg_kwargs = get_learn_function_defaults(args.alg, env_type)
     alg_kwargs.update(extra_args)
 
     env = build_env(args)
-    if args.save_video_interval != 0:
+    if args.save_video_interval != 0:   # default 0
         env = VecVideoRecorder(env, osp.join(logger.get_dir(), "videos"), record_video_trigger=lambda x: x % args.save_video_interval == 0, video_length=args.save_video_length)
 
     if args.network:
         alg_kwargs['network'] = args.network
-    else:
+    else:   # default None
         if alg_kwargs.get('network') is None:
-            alg_kwargs['network'] = get_default_network(env_type)
+            alg_kwargs['network'] = get_default_network(env_type)   # default get 'cnn'
 
     print('Training {} on {}:{} with arguments \n{}'.format(args.alg, env_type, env_id, alg_kwargs))
-
+    # Training deepq on atari:PongNoFrameskip-v4 with arguments 
+    # {'network': 'conv_only', 'lr': 0.0001, 'buffer_size': 10000, 'exploration_fraction': 0.1, 
+    #  'exploration_final_eps': 0.01, 'train_freq': 4, 'learning_starts': 10000, 
+    #  'target_network_update_freq': 1000, 'gamma': 0.99, 'prioritized_replay': True, 
+    #  'prioritized_replay_alpha': 0.6, 'checkpoint_freq': 10000, 'checkpoint_path': None, 'dueling': True}
     model = learn(
         env=env,
         seed=seed,
@@ -196,8 +200,10 @@ def main(args):
     arg_parser = common_arg_parser()
     args, unknown_args = arg_parser.parse_known_args(args)
     extra_args = parse_cmdline_kwargs(unknown_args)
+    print(args)
+    print(extra_args)
 
-    if args.extra_import is not None:
+    if args.extra_import is not None:   # None by default
         import_module(args.extra_import)
 
     if MPI is None or MPI.COMM_WORLD.Get_rank() == 0:
@@ -209,11 +215,11 @@ def main(args):
 
     model, env = train(args, extra_args)
 
-    if args.save_path is not None and rank == 0:
+    if args.save_path is not None and rank == 0:    # None by default
         save_path = osp.expanduser(args.save_path)
         model.save(save_path)
 
-    if args.play:
+    if args.play:   # None by default
         logger.log("Running trained model")
         obs = env.reset()
 
