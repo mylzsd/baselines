@@ -206,12 +206,6 @@ def main(args):
     print(args)
     print(extra_args)
 
-<<<<<<< HEAD
-    if args.extra_import is not None:   # None by default
-        import_module(args.extra_import)
-
-=======
->>>>>>> upstream/master
     if MPI is None or MPI.COMM_WORLD.Get_rank() == 0:
         rank = 0
         logger.configure()
